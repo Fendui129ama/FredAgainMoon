@@ -132,3 +132,70 @@ enum StemLane {
     private final int laneId;
     private final String label;
 
+    StemLane(int laneId, String label) {
+        this.laneId = laneId;
+        this.label = label;
+    }
+
+    public int getLaneId() { return laneId; }
+    public String getLabel() { return label; }
+}
+
+enum StudioPhase {
+    IDLE(0),
+    LYRIC_LOCK(1),
+    MELODY_SKETCH(2),
+    ARRANGE(3),
+    MIX_PASS(4),
+    MASTER(5),
+    COOLDOWN(6);
+
+    private final int code;
+    StudioPhase(int code) { this.code = code; }
+    public int getCode() { return code; }
+}
+
+enum HarmonyVerdict {
+    DISSONANT(0),
+    TENSION(1),
+    RESOLVED(2),
+    HOOK(3),
+    CLICHE(4);
+
+    private final int code;
+    HarmonyVerdict(int code) { this.code = code; }
+    public int getCode() { return code; }
+}
+
+enum HookBetKind {
+    DOUBLE_HOOK(0, "Double Hook", 14),
+    BRIDGE_LIFT(1, "Bridge Lift", 22),
+    MOON_DROP(2, "Moon Drop", 160);
+
+    private final int id;
+    private final String label;
+    private final int royaltyMultiple;
+
+    HookBetKind(int id, String label, int royaltyMultiple) {
+        this.id = id;
+        this.label = label;
+        this.royaltyMultiple = royaltyMultiple;
+    }
+
+    public int getId() { return id; }
+    public String getLabel() { return label; }
+    public int getRoyaltyMultiple() { return royaltyMultiple; }
+}
+
+enum ReleaseRail {
+    MAINNET(1, 1, "Ethereum Main"),
+    BASE(8453, 6, "Base L2"),
+    ARBITRUM(42161, 18, "Arbitrum One"),
+    OPTIMISM(10, 12, "Optimism"),
+    POLYGON(137, 30, "Polygon PoS");
+
+    private final int chainId;
+    private final int confirmBlocks;
+    private final String label;
+
+    ReleaseRail(int chainId, int confirmBlocks, String label) {
