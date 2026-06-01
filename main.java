@@ -199,3 +199,70 @@ enum ReleaseRail {
     private final String label;
 
     ReleaseRail(int chainId, int confirmBlocks, String label) {
+        this.chainId = chainId;
+        this.confirmBlocks = confirmBlocks;
+        this.label = label;
+    }
+
+    public int getChainId() { return chainId; }
+    public int getConfirmBlocks() { return confirmBlocks; }
+    public String getLabel() { return label; }
+
+    public static ReleaseRail byId(int id) {
+        for (ReleaseRail r : values()) if (r.chainId == id) return r;
+        return MAINNET;
+    }
+}
+
+enum WriterArchetype {
+    BEDROOM_SCRIBE(0, 0, "Bedroom Scribe", 1.00),
+    LOOP_CRAFTER(1, 140, "Loop Crafter", 1.05),
+    HOOK_SMITH(2, 320, "Hook Smith", 1.09),
+    STUDIO_ORACLE(3, 620, "Studio Oracle", 1.13),
+    MOON_CONDUCTOR(4, 1100, "Moon Conductor", 1.17),
+    AGAIN_ARCHITECT(5, 1800, "Again Architect", 1.21);
+
+    private final int id;
+    private final int xpGate;
+    private final String title;
+    private final double royaltyBoost;
+
+    WriterArchetype(int id, int xpGate, String title, double royaltyBoost) {
+        this.id = id;
+        this.xpGate = xpGate;
+        this.title = title;
+        this.royaltyBoost = royaltyBoost;
+    }
+
+    public int getId() { return id; }
+    public int getXpGate() { return xpGate; }
+    public String getTitle() { return title; }
+    public double getRoyaltyBoost() { return royaltyBoost; }
+
+    public static WriterArchetype forXp(int xp) {
+        WriterArchetype best = BEDROOM_SCRIBE;
+        for (WriterArchetype a : values()) if (xp >= a.xpGate) best = a;
+        return best;
+    }
+}
+
+// ======================== Constants ========================
+
+final class MoonStudioConfig {
+    private MoonStudioConfig() {}
+
+    static final String ADDRESS_STUDIO = "0xc37AaE7c771Dc1Ec0DDbeEAfeE252D8bEa9d542f";
+    static final String ADDRESS_ROYALTY_POOL = "0xDcF1fD2dc0df3544E3e774A9Ef6B9E8aDe85bc56";
+    static final String ADDRESS_ORACLE = "0xbCce6B185b6DDAE4d109BeCcCdA2FF0fE2E6A8b3";
+    static final String ADDRESS_COLLAB_DESK = "0xAddd42343cbA0eaF7BE71addCBB7bDD0b4aBcB36";
+    static final String ADDRESS_PUBLISHER = "0xeEF8ac4Ab74dE4910fF6D9ae6932Efd672596f0C";
+    static final String ADDRESS_STEM_VAULT = "0x2cFA22415C86E9A20c31Afa8052e2b1D8bA980aa";
+    static final String ADDRESS_PAUSE_GUARD = "0xa2a773d0d1bEAbEfBB04CB3cCD28Af2A87dEC58C";
+    static final String ADDRESS_REMIX_LAB = "0xe24eEe4eC6bEfBAbcfdBEa5bDCb5D8F7Bab4bCA9";
+    static final String ADDRESS_VOCAL_BOOTH = "0xcA9ABc37d744bC114A0eAeFd8a7c96f2EC9f1384";
+    static final String ADDRESS_MASTER_ROOM = "0xFB5F4BaDFFE3Fe3daBEecBf2173E084F93f1E9f2";
+    static final String ADDRESS_REFERRAL = "0x9D2Daa6B53da5ffA9B5045D3aB94e5cB1f0Af227";
+
+    static final String DOMAIN_SEPARATOR = "0xB668CD2Fb5D21B3BEFaC77BE5A8564c6Fb29eC5e0Eff49d3a55773fC8dBe5088";
+    static final String CHAIN_SALT = "0xDB96D3cB5BCfe00CECd6AECCFd1C2Dc0d6617Ce61E709FC40eF0cD9D1F13CBA0";
+
