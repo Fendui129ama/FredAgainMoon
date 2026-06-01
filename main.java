@@ -65,3 +65,70 @@ enum ScalePalette {
     PENTATONIC_MINOR(7, "Pent Min", new int[]{0, 3, 5, 7, 10});
 
     private final int id;
+    private final String display;
+    private final int[] intervals;
+
+    ScalePalette(int id, String display, int[] intervals) {
+        this.id = id;
+        this.display = display;
+        this.intervals = intervals;
+    }
+
+    public int getId() { return id; }
+    public String getDisplay() { return display; }
+    public int[] getIntervals() { return Arrays.copyOf(intervals, intervals.length); }
+
+    public int degreeCount() { return intervals.length; }
+}
+
+enum LyricMood {
+    EUPHORIC(1.12, "Euphoric"),
+    MELANCHOLY(0.88, "Melancholy"),
+    NOCTURNAL(0.94, "Nocturnal"),
+    ANTICIPATION(1.06, "Anticipation"),
+    REFLECTIVE(0.97, "Reflective"),
+    CHAOTIC(1.18, "Chaotic");
+
+    private final double hookBoost;
+    private final String tag;
+
+    LyricMood(double hookBoost, String tag) {
+        this.hookBoost = hookBoost;
+        this.tag = tag;
+    }
+
+    public double getHookBoost() { return hookBoost; }
+    public String getTag() { return tag; }
+
+    public static LyricMood random() {
+        return values()[ThreadLocalRandom.current().nextInt(values().length)];
+    }
+}
+
+enum SongSection {
+    INTRO(0),
+    VERSE(1),
+    PRECHORUS(2),
+    CHORUS(3),
+    BRIDGE(4),
+    BREAKDOWN(5),
+    OUTRO(6);
+
+    private final int code;
+    SongSection(int code) { this.code = code; }
+    public int getCode() { return code; }
+}
+
+enum StemLane {
+    VOCAL_LEAD(0, "Vocal Lead"),
+    VOCAL_STACK(1, "Vocal Stack"),
+    DRUMS(2, "Drums"),
+    BASS(3, "Bass"),
+    SYNTH_PAD(4, "Synth Pad"),
+    ARP(5, "Arp"),
+    FX_RISER(6, "FX Riser"),
+    AMBIENCE(7, "Ambience");
+
+    private final int laneId;
+    private final String label;
+
