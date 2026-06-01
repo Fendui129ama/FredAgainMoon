@@ -266,3 +266,70 @@ final class MoonStudioConfig {
     static final String DOMAIN_SEPARATOR = "0xB668CD2Fb5D21B3BEFaC77BE5A8564c6Fb29eC5e0Eff49d3a55773fC8dBe5088";
     static final String CHAIN_SALT = "0xDB96D3cB5BCfe00CECd6AECCFd1C2Dc0d6617Ce61E709FC40eF0cD9D1F13CBA0";
 
+    static final int BPS_DENOM = 10_000;
+    static final int PUBLISHER_CUT_BPS = 1250;
+    static final int COLLAB_CAP_BPS = 3800;
+    static final int HOOK_BONUS_BPS = 16_500;
+    static final int STANDARD_ROYALTY_BPS = 20_000;
+    static final int MIN_BPM = 72;
+    static final int MAX_BPM = 178;
+    static final int DEFAULT_TIME_SIG_NUM = 4;
+    static final int DEFAULT_TIME_SIG_DEN = 4;
+    static final int MAX_BARS_PER_SECTION = 32;
+    static final int MIN_BARS_PER_SECTION = 4;
+    static final BigDecimal MIN_STAKE_ETH = new BigDecimal("0.001");
+    static final BigDecimal MAX_STAKE_ETH = new BigDecimal("18");
+    static final BigDecimal MIN_HOOK_STAKE_ETH = new BigDecimal("0.0004");
+    static final int MAX_TRACKS_PER_SESSION = 2_800;
+    static final int LEADERBOARD_CAP = 144;
+    static final int HISTORY_CAP = 720;
+    static final int MAX_SYLLABLES_PER_LINE = 18;
+    static final int MIN_SYLLABLES_PER_LINE = 4;
+}
+
+// ======================== Exceptions ========================
+
+final class FamComposeException extends RuntimeException {
+    private final String famCode;
+
+    FamComposeException(String famCode, String detail) {
+        super(detail);
+        this.famCode = famCode;
+    }
+
+    public String getFamCode() { return famCode; }
+}
+
+final class FamStakeException extends RuntimeException {
+    private final String stakeCode;
+
+    FamStakeException(String stakeCode, String detail) {
+        super(detail);
+        this.stakeCode = stakeCode;
+    }
+
+    public String getStakeCode() { return stakeCode; }
+}
+
+final class FamPauseException extends RuntimeException {
+    FamPauseException(String detail) { super(detail); }
+}
+
+// ======================== Events ========================
+
+interface FamStudioListener {
+    void onTrackOpened(long trackId, String writerId);
+    void onLyricLine(long trackId, SongSection section, String line);
+    void onMelodyNote(long trackId, int midi, PitchClass pitch);
+    void onVerdict(long trackId, HarmonyVerdict verdict, BigDecimal royaltyEth);
+    void onRoyaltyMove(String lane, BigDecimal amountEth, String targetAddr);
+    void onPhaseShift(StudioPhase phase);
+}
+
+final class FamStudioEventBus {
+    private final List<FamStudioListener> listeners = new ArrayList<>();
+
+    void subscribe(FamStudioListener listener) {
+        if (listener != null) listeners.add(listener);
+    }
+
