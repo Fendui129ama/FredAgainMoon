@@ -467,3 +467,70 @@ final class LyricSeedBank {
                 "Tape hiss carries", "Neon verbs on", "Pulse metronome in",
                 "Ghost choir hums a", "Satellite delay on", "Soft limiter kisses"
         };
+        this.bridges = new String[] {
+                "chorus lane tonight", "hook that never lands", "verse we overwrite",
+                "bridge of borrowed time", "drop before the dawn", "stem that multiplies",
+                "line the model sang", "prompt in minor key", "loop that finds you"
+        };
+        this.closers = new String[] {
+                "again.", "on repeat.", "in 7/8 time.", "till sunrise.", "for export.",
+                "to mainnet.", "unmastered.", "with sidechain.", "and moonphase."
+        };
+    }
+
+    String weaveLine(SongSection section) {
+        String o = openers[rng.nextInt(openers.length)];
+        String b = bridges[rng.nextInt(bridges.length)];
+        String c = closers[rng.nextInt(closers.length)];
+        String raw = o + " " + b + " " + c;
+        if (section == SongSection.CHORUS) raw = raw.toUpperCase(Locale.ROOT);
+        return raw.length() > 96 ? raw.substring(0, 96) : raw;
+    }
+
+    int estimateSyllables(String line) {
+        String[] parts = line.trim().split("\\s+");
+        int sum = 0;
+        for (String p : parts) sum += Math.max(1, (int) Math.ceil(p.length() / 2.8));
+        return Math.min(MoonStudioConfig.MAX_SYLLABLES_PER_LINE, sum);
+    }
+}
+
+final class MelodyWeaver {
+    private final SecureRandom rng;
+
+    MelodyWeaver(SecureRandom rng) { this.rng = rng; }
+
+    List<MelodyNote> weavePhrase(PitchClass tonic, ScalePalette scale, int bars, int bpm) {
+        List<MelodyNote> notes = new ArrayList<>();
+        int[] intervals = scale.getIntervals();
+        int rootMidi = tonic.getMidiRoot();
+        int ticksPerBar = 480 * MoonStudioConfig.DEFAULT_TIME_SIG_NUM;
+        for (int bar = 0; bar < bars; bar++) {
+            int steps = 4 + rng.nextInt(5);
+            for (int s = 0; s < steps; s++) {
+                int deg = intervals[rng.nextInt(intervals.length)];
+                int midi = rootMidi + deg + (bar % 2 == 0 ? 0 : 12);
+                int dur = ticksPerBar / steps;
+                notes.add(new MelodyNote(midi, PitchClass.fromDegree(deg), dur, bar));
+            }
+        }
+        return notes;
+    }
+}
+
+// ======================== Writer profile ========================
+
+final class WriterSeatProfile {
+    private final String writerId;
+    private final String walletHex;
+    private int xp;
+    private int hookStreak;
+    private int flatStreak;
+    private BigDecimal lifetimeEarned = BigDecimal.ZERO;
+    private BigDecimal lifetimeSpent = BigDecimal.ZERO;
+    private final Deque<String> recentTracks = new ArrayDeque<>();
+
+    WriterSeatProfile(String writerId, String walletHex) {
+        this.writerId = writerId;
+        this.walletHex = walletHex;
+    }
