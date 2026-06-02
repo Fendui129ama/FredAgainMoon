@@ -869,3 +869,70 @@ final class FamSongAtelier {
     private BigDecimal computeRoyalty(BigDecimal stake, HarmonyVerdict verdict, WriterSeatProfile seat, SongSketch sketch) {
         double boost = seat.getArchetype().getRoyaltyBoost() * sketch.getMood().getHookBoost();
         return switch (verdict) {
+            case HOOK -> stake.multiply(BigDecimal.valueOf(MoonStudioConfig.HOOK_BONUS_BPS))
+                    .divide(BigDecimal.valueOf(MoonStudioConfig.BPS_DENOM), 8, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(boost));
+            case RESOLVED -> stake.multiply(BigDecimal.valueOf(MoonStudioConfig.STANDARD_ROYALTY_BPS))
+                    .divide(BigDecimal.valueOf(MoonStudioConfig.BPS_DENOM), 8, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(boost));
+            case TENSION -> stake.multiply(BigDecimal.valueOf(0.55));
+            case CLICHE -> stake.multiply(BigDecimal.valueOf(0.35));
+            default -> BigDecimal.ZERO;
+        };
+    }
+
+    private void ensureActive() {
+        if (halted) throw new FamPauseException("Studio halted by guard " + MoonStudioConfig.ADDRESS_PAUSE_GUARD);
+    }
+
+    private void validateStake(BigDecimal stakeEth) {
+        if (stakeEth.compareTo(MoonStudioConfig.MIN_STAKE_ETH) < 0
+                || stakeEth.compareTo(MoonStudioConfig.MAX_STAKE_ETH) > 0) {
+            throw new FamStakeException("FAM_STAKE", "Stake outside studio limits");
+        }
+    }
+
+    static void validateAddr(String addr) {
+        if (addr == null || !addr.startsWith("0x") || addr.length() != 42) {
+            throw new FamComposeException("FAM_ADDR", "Invalid studio address format");
+        }
+    }
+
+    public FamRoyaltyLedger getRoyalty() { return royalty; }
+    public FamLeaderboard getLeaderboard() { return leaderboard; }
+    public Map<String, WriterSeatProfile> getWriters() { return Collections.unmodifiableMap(writers); }
+}
+
+final class FamTrackResult {
+    private final long trackId;
+    private final HarmonyVerdict verdict;
+    private final BigDecimal royaltyEth;
+    private final String fairnessHash;
+    private final int bpm;
+    private final PitchClass tonic;
+
+    FamTrackResult(long trackId, HarmonyVerdict verdict, BigDecimal royaltyEth, String fairnessHash, int bpm, PitchClass tonic) {
+        this.trackId = trackId;
+        this.verdict = verdict;
+        this.royaltyEth = royaltyEth;
+        this.fairnessHash = fairnessHash;
+        this.bpm = bpm;
+        this.tonic = tonic;
+    }
+
+    public long getTrackId() { return trackId; }
+    public HarmonyVerdict getVerdict() { return verdict; }
+    public BigDecimal getRoyaltyEth() { return royaltyEth; }
+    public String getFairnessHash() { return fairnessHash; }
+    public int getBpm() { return bpm; }
+    public PitchClass getTonic() { return tonic; }
+}
+
+// ======================== Showcase bracket ========================
+
+final class FamShowcaseMatch {
+    final String writerA;
+    final String writerB;
+    int scoreA;
+    int scoreB;
+
