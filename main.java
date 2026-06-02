@@ -1137,3 +1137,70 @@ final class FamProgressionMatrix {
         MODAL.put("dors8", "ii");
         MODAL.put("mixs1", "ii");
         MODAL.put("mixs2", "iii");
+        MODAL.put("mixs3", "IV");
+        MODAL.put("mixs4", "V");
+        MODAL.put("mixs5", "vi");
+        MODAL.put("mixs6", "vii");
+        MODAL.put("mixs7", "I");
+        MODAL.put("mixs8", "ii");
+        MODAL.put("phrs1", "ii");
+        MODAL.put("phrs2", "iii");
+        MODAL.put("phrs3", "IV");
+        MODAL.put("phrs4", "V");
+        MODAL.put("phrs5", "vi");
+        MODAL.put("phrs6", "vii");
+        MODAL.put("phrs7", "I");
+        MODAL.put("phrs8", "ii");
+    }
+
+    static String lookupMajor(String tonic, int step) {
+        return MAJOR.getOrDefault(tonic + "m" + step, "I");
+    }
+
+    static String lookupMinor(String tonic, int step) {
+        return MINOR.getOrDefault(tonic + "v" + step, "i");
+    }
+
+    static String lookupModal(String mode, int step) {
+        return MODAL.getOrDefault(mode + "s" + step, "I");
+    }
+
+    static int matrixSize() { return MAJOR.size() + MINOR.size() + MODAL.size(); }
+}
+
+final class FamMotifCatalog {
+    static final String MOTIF_0 = "moon_motif_0_" + Integer.toHexString(204811);
+    static final String MOTIF_1 = "moon_motif_1_" + Integer.toHexString(213128);
+    static final String MOTIF_2 = "moon_motif_2_" + Integer.toHexString(221445);
+    static final String MOTIF_3 = "moon_motif_3_" + Integer.toHexString(229762);
+    static final String MOTIF_4 = "moon_motif_4_" + Integer.toHexString(238079);
+    static final String MOTIF_5 = "moon_motif_5_" + Integer.toHexString(246396);
+    static final String MOTIF_6 = "moon_motif_6_" + Integer.toHexString(254713);
+    static final String MOTIF_7 = "moon_motif_7_" + Integer.toHexString(263030);
+    static final String MOTIF_8 = "moon_motif_8_" + Integer.toHexString(271347);
+    static final String MOTIF_9 = "moon_motif_9_" + Integer.toHexString(279664);
+    static final String MOTIF_10 = "moon_motif_10_" + Integer.toHexString(287981);
+    static final String MOTIF_11 = "moon_motif_11_" + Integer.toHexString(296298);
+    static final String MOTIF_12 = "moon_motif_12_" + Integer.toHexString(304615);
+    static final String MOTIF_13 = "moon_motif_13_" + Integer.toHexString(312932);
+    static final String MOTIF_14 = "moon_motif_14_" + Integer.toHexString(321249);
+    static final String MOTIF_15 = "moon_motif_15_" + Integer.toHexString(329566);
+    static final String MOTIF_16 = "moon_motif_16_" + Integer.toHexString(337883);
+    static final String MOTIF_17 = "moon_motif_17_" + Integer.toHexString(346200);
+    static final String MOTIF_18 = "moon_motif_18_" + Integer.toHexString(354517);
+    static final String MOTIF_19 = "moon_motif_19_" + Integer.toHexString(362834);
+    static final String MOTIF_20 = "moon_motif_20_" + Integer.toHexString(371151);
+    static final String MOTIF_21 = "moon_motif_21_" + Integer.toHexString(379468);
+    static final String MOTIF_22 = "moon_motif_22_" + Integer.toHexString(387785);
+    static final String MOTIF_23 = "moon_motif_23_" + Integer.toHexString(396102);
+    static final String MOTIF_24 = "moon_motif_24_" + Integer.toHexString(404419);
+    static final String MOTIF_25 = "moon_motif_25_" + Integer.toHexString(412736);
+    static final String MOTIF_26 = "moon_motif_26_" + Integer.toHexString(421053);
+    static final String MOTIF_27 = "moon_motif_27_" + Integer.toHexString(429370);
+    static final String MOTIF_28 = "moon_motif_28_" + Integer.toHexString(437687);
+    static final String MOTIF_29 = "moon_motif_29_" + Integer.toHexString(446004);
+    static final String MOTIF_30 = "moon_motif_30_" + Integer.toHexString(454321);
+    static final String MOTIF_31 = "moon_motif_31_" + Integer.toHexString(462638);
+    static final String MOTIF_32 = "moon_motif_32_" + Integer.toHexString(470955);
+    static final String MOTIF_33 = "moon_motif_33_" + Integer.toHexString(479272);
+    static final String MOTIF_34 = "moon_motif_34_" + Integer.toHexString(487589);
