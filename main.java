@@ -802,3 +802,70 @@ final class FamSongAtelier {
             BigDecimal hookAmt = stakeEth.multiply(BigDecimal.valueOf(0.12)).max(MoonStudioConfig.MIN_HOOK_STAKE_ETH);
             hookTotal = hookTotal.add(hookAmt);
             royalty.creditStudio(hookAmt, "HOOK_ANTE");
+            boolean hit = switch (kind) {
+                case DOUBLE_HOOK -> hookResolver.resolveDoubleHook(sketch);
+                case BRIDGE_LIFT -> hookResolver.resolveBridgeLift(sketch);
+                case MOON_DROP -> hookResolver.resolveMoonDrop(sketch, verdict);
+            };
+            royalty.hookStakeSink(hookAmt, hit, kind);
+        }
+
+        seat.recordOutcome(verdict, payout.subtract(stakeEth).subtract(hookTotal));
+        seat.pushHistory(trackId + ":" + verdict.name() + ":" + payout);
+        leaderboard.upsert(seat);
+        bus.emitVerdict(trackId, verdict, payout);
+
+        phase = StudioPhase.COOLDOWN;
+        bus.emitPhase(phase);
+        return new FamTrackResult(trackId, verdict, payout, fairness.getCommitHash(), sketch.getBpm(), sketch.getTonic());
+    }
+
+    private SongSketch buildSketch(long trackId) {
+        SongSketch sketch = new SongSketch();
+        sketch.setBpm(MoonStudioConfig.MIN_BPM + rng.nextInt(MoonStudioConfig.MAX_BPM - MoonStudioConfig.MIN_BPM + 1));
+        sketch.setTonic(PitchClass.values()[rng.nextInt(PitchClass.values().length)]);
+        sketch.setScale(ScalePalette.values()[rng.nextInt(ScalePalette.values().length)]);
+        sketch.setMood(LyricMood.random());
+
+        SongSection[] flow = {
+                SongSection.INTRO, SongSection.VERSE, SongSection.PRECHORUS,
+                SongSection.CHORUS, SongSection.VERSE, SongSection.BRIDGE,
+                SongSection.CHORUS, SongSection.OUTRO
+        };
+        for (SongSection sec : flow) {
+            int bars = MoonStudioConfig.MIN_BARS_PER_SECTION + rng.nextInt(
+                    MoonStudioConfig.MAX_BARS_PER_SECTION - MoonStudioConfig.MIN_BARS_PER_SECTION + 1);
+            VerseBlock block = new VerseBlock(sec);
+            block.setBarCount(bars);
+            int lineCount = 2 + rng.nextInt(5);
+            for (int i = 0; i < lineCount; i++) {
+                String line = lyricBank.weaveLine(sec);
+                int syll = lyricBank.estimateSyllables(line);
+                block.addLine(new LyricLine(line, syll, sec, i));
+                bus.emitLyric(trackId, sec, line);
+            }
+            for (MelodyNote n : melodyWeaver.weavePhrase(sketch.getTonic(), sketch.getScale(), bars, sketch.getBpm())) {
+                block.addNote(n);
+                bus.emitNote(trackId, n.getMidi(), n.getPitch());
+            }
+            sketch.addBlock(block);
+        }
+        return sketch;
+    }
+
+    private HarmonyVerdict scoreHarmony(SongSketch sketch, WriterSeatProfile seat) {
+        double avgMidi = sketch.getBlocks().stream().mapToDouble(VerseBlock::averageMidi).average().orElse(60);
+        int syllTotal = sketch.getBlocks().stream().mapToInt(VerseBlock::totalSyllables).sum();
+        double mood = sketch.getMood().getHookBoost();
+        double arch = seat.getArchetype().getRoyaltyBoost();
+        double score = (avgMidi / 72.0) * 0.35 + (syllTotal / 200.0) * 0.25 + mood * arch * sketch.hookDensity() * 0.08;
+        if (score > 2.4) return HarmonyVerdict.HOOK;
+        if (score > 1.7) return HarmonyVerdict.RESOLVED;
+        if (score > 1.1) return HarmonyVerdict.TENSION;
+        if (score < 0.6) return HarmonyVerdict.DISSONANT;
+        return HarmonyVerdict.CLICHE;
+    }
+
+    private BigDecimal computeRoyalty(BigDecimal stake, HarmonyVerdict verdict, WriterSeatProfile seat, SongSketch sketch) {
+        double boost = seat.getArchetype().getRoyaltyBoost() * sketch.getMood().getHookBoost();
+        return switch (verdict) {
