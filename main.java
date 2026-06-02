@@ -601,3 +601,70 @@ final class FamLeaderboard {
                 Instant.now().getEpochSecond());
         heap.offer(e);
         while (heap.size() > MoonStudioConfig.LEADERBOARD_CAP) heap.poll();
+    }
+
+    synchronized List<FamLeaderboardEntry> top(int n) {
+        return heap.stream().sorted().limit(n).collect(Collectors.toList());
+    }
+}
+
+// ======================== Royalty ledger ========================
+
+final class FamRoyaltyLedger {
+    private BigDecimal studioBalance = BigDecimal.ZERO;
+    private BigDecimal publisherAccrued = BigDecimal.ZERO;
+    private BigDecimal collabPool = BigDecimal.ZERO;
+    private BigDecimal stemPool = BigDecimal.ZERO;
+    private final AtomicLong moveSeq = new AtomicLong(0);
+    private final List<String> audit = new ArrayList<>();
+    private final FamStudioEventBus bus;
+
+    FamRoyaltyLedger(FamStudioEventBus bus) {
+        this.bus = bus;
+    }
+
+    void creditStudio(BigDecimal eth, String lane) {
+        studioBalance = studioBalance.add(eth);
+        bus.emitRoyalty(lane, eth, MoonStudioConfig.ADDRESS_STUDIO);
+        audit("STUDIO+" + eth + "@" + lane);
+    }
+
+    void applyPublisherCut(BigDecimal gross) {
+        BigDecimal cut = gross.multiply(BigDecimal.valueOf(MoonStudioConfig.PUBLISHER_CUT_BPS))
+                .divide(BigDecimal.valueOf(MoonStudioConfig.BPS_DENOM), 8, RoundingMode.HALF_UP);
+        BigDecimal capped = cut.min(gross.multiply(BigDecimal.valueOf(MoonStudioConfig.COLLAB_CAP_BPS))
+                .divide(BigDecimal.valueOf(MoonStudioConfig.BPS_DENOM), 8, RoundingMode.HALF_UP));
+        publisherAccrued = publisherAccrued.add(capped);
+        studioBalance = studioBalance.add(capped);
+        bus.emitRoyalty("PUBLISHER", capped, MoonStudioConfig.ADDRESS_PUBLISHER);
+        audit("PUBLISHER+" + capped);
+    }
+
+    void payWriter(BigDecimal eth) {
+        if (studioBalance.compareTo(eth) < 0) {
+            collabPool = collabPool.subtract(eth.subtract(studioBalance));
+            studioBalance = BigDecimal.ZERO;
+        } else {
+            studioBalance = studioBalance.subtract(eth);
+        }
+        audit("PAYOUT-" + eth);
+    }
+
+    void hookStakeSink(BigDecimal eth, boolean hit, HookBetKind kind) {
+        if (hit) {
+            BigDecimal payout = eth.multiply(BigDecimal.valueOf(kind.getRoyaltyMultiple()));
+            stemPool = stemPool.subtract(payout);
+            payWriter(payout);
+            bus.emitRoyalty("HOOK_WIN", payout, MoonStudioConfig.ADDRESS_STEM_VAULT);
+        } else {
+            stemPool = stemPool.add(eth);
+            bus.emitRoyalty("HOOK_LOSS", eth, MoonStudioConfig.ADDRESS_STEM_VAULT);
+        }
+    }
+
+    private void audit(String line) {
+        String ts = DateTimeFormatter.ISO_INSTANT.withZone(ZoneOffset.UTC).format(Instant.now());
+        audit.add(moveSeq.incrementAndGet() + "|" + ts + "|" + line);
+        if (audit.size() > MoonStudioConfig.HISTORY_CAP) audit.remove(0);
+    }
+
