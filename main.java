@@ -333,3 +333,70 @@ final class FamStudioEventBus {
         if (listener != null) listeners.add(listener);
     }
 
+    void emitTrack(long trackId, String writerId) {
+        for (FamStudioListener l : listeners) l.onTrackOpened(trackId, writerId);
+    }
+
+    void emitLyric(long trackId, SongSection section, String line) {
+        for (FamStudioListener l : listeners) l.onLyricLine(trackId, section, line);
+    }
+
+    void emitNote(long trackId, int midi, PitchClass pitch) {
+        for (FamStudioListener l : listeners) l.onMelodyNote(trackId, midi, pitch);
+    }
+
+    void emitVerdict(long trackId, HarmonyVerdict verdict, BigDecimal delta) {
+        for (FamStudioListener l : listeners) l.onVerdict(trackId, verdict, delta);
+    }
+
+    void emitRoyalty(String lane, BigDecimal amount, String target) {
+        for (FamStudioListener l : listeners) l.onRoyaltyMove(lane, amount, target);
+    }
+
+    void emitPhase(StudioPhase phase) {
+        for (FamStudioListener l : listeners) l.onPhaseShift(phase);
+    }
+}
+
+// ======================== Lyric & melody models ========================
+
+final class LyricLine {
+    private final String text;
+    private final int syllables;
+    private final SongSection section;
+    private final int barIndex;
+
+    LyricLine(String text, int syllables, SongSection section, int barIndex) {
+        this.text = text;
+        this.syllables = syllables;
+        this.section = section;
+        this.barIndex = barIndex;
+    }
+
+    public String getText() { return text; }
+    public int getSyllables() { return syllables; }
+    public SongSection getSection() { return section; }
+    public int getBarIndex() { return barIndex; }
+}
+
+final class MelodyNote {
+    private final int midi;
+    private final PitchClass pitch;
+    private final int durationTicks;
+    private final int barIndex;
+
+    MelodyNote(int midi, PitchClass pitch, int durationTicks, int barIndex) {
+        this.midi = midi;
+        this.pitch = pitch;
+        this.durationTicks = durationTicks;
+        this.barIndex = barIndex;
+    }
+
+    public int getMidi() { return midi; }
+    public PitchClass getPitch() { return pitch; }
+    public int getDurationTicks() { return durationTicks; }
+    public int getBarIndex() { return barIndex; }
+}
+
+final class VerseBlock {
+    private final List<LyricLine> lines = new ArrayList<>();
