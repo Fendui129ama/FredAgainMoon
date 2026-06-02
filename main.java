@@ -735,3 +735,70 @@ final class FamSongAtelier {
     private final FamHookResolver hookResolver;
     private final LyricSeedBank lyricBank;
     private final MelodyWeaver melodyWeaver;
+    private final Map<String, WriterSeatProfile> writers = new ConcurrentHashMap<>();
+    private final FamLeaderboard leaderboard = new FamLeaderboard();
+    private final AtomicLong trackSeq = new AtomicLong(0);
+    private StudioPhase phase = StudioPhase.IDLE;
+    private boolean halted;
+    private final String studioAddr;
+    private final String oracleAddr;
+    private final ReleaseRail rail;
+
+    FamSongAtelier(String studioAddr, String oracleAddr, ReleaseRail rail, SecureRandom rng) {
+        this.studioAddr = studioAddr;
+        this.oracleAddr = oracleAddr;
+        this.rail = rail;
+        this.rng = rng;
+        this.bus = new FamStudioEventBus();
+        this.royalty = new FamRoyaltyLedger(bus);
+        this.hookResolver = new FamHookResolver();
+        this.lyricBank = new LyricSeedBank(rng);
+        this.melodyWeaver = new MelodyWeaver(rng);
+    }
+
+    public FamStudioEventBus getBus() { return bus; }
+    public StudioPhase getPhase() { return phase; }
+    public ReleaseRail getRail() { return rail; }
+
+    void setHalted(boolean halted) {
+        this.halted = halted;
+        if (halted) bus.emitPhase(StudioPhase.COOLDOWN);
+    }
+
+    WriterSeatProfile registerWriter(String writerId, String walletHex) {
+        validateAddr(walletHex);
+        return writers.computeIfAbsent(writerId, id -> new WriterSeatProfile(id, walletHex));
+    }
+
+    FamTrackResult composeTrack(String writerId, BigDecimal stakeEth, List<HookBetKind> hooks) {
+        ensureActive();
+        if (phase != StudioPhase.IDLE && phase != StudioPhase.COOLDOWN) {
+            throw new FamComposeException("FAM_PHASE", "Studio busy at phase " + phase);
+        }
+        validateStake(stakeEth);
+        WriterSeatProfile seat = writers.get(writerId);
+        if (seat == null) throw new FamComposeException("FAM_WRITER", "Unknown writer " + writerId);
+
+        long trackId = trackSeq.incrementAndGet();
+        FamCommitReveal fairness = new FamCommitReveal(rng);
+        phase = StudioPhase.LYRIC_LOCK;
+        bus.emitPhase(phase);
+        bus.emitTrack(trackId, writerId);
+        royalty.creditStudio(stakeEth, "ANTE");
+
+        SongSketch sketch = buildSketch(trackId);
+        phase = StudioPhase.MELODY_SKETCH;
+        bus.emitPhase(phase);
+
+        phase = StudioPhase.ARRANGE;
+        bus.emitPhase(phase);
+        HarmonyVerdict verdict = scoreHarmony(sketch, seat);
+        BigDecimal payout = computeRoyalty(stakeEth, verdict, seat, sketch);
+        royalty.applyPublisherCut(stakeEth);
+        if (payout.signum() > 0) royalty.payWriter(payout);
+
+        BigDecimal hookTotal = BigDecimal.ZERO;
+        for (HookBetKind kind : hooks) {
+            BigDecimal hookAmt = stakeEth.multiply(BigDecimal.valueOf(0.12)).max(MoonStudioConfig.MIN_HOOK_STAKE_ETH);
+            hookTotal = hookTotal.add(hookAmt);
+            royalty.creditStudio(hookAmt, "HOOK_ANTE");
