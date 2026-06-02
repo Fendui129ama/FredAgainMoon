@@ -400,3 +400,70 @@ final class MelodyNote {
 
 final class VerseBlock {
     private final List<LyricLine> lines = new ArrayList<>();
+    private final List<MelodyNote> notes = new ArrayList<>();
+    private final SongSection section;
+    private int barCount;
+
+    VerseBlock(SongSection section) {
+        this.section = section;
+    }
+
+    void addLine(LyricLine line) { lines.add(line); }
+    void addNote(MelodyNote note) { notes.add(note); }
+    void setBarCount(int barCount) { this.barCount = barCount; }
+
+    public SongSection getSection() { return section; }
+    public List<LyricLine> getLines() { return Collections.unmodifiableList(lines); }
+    public List<MelodyNote> getNotes() { return Collections.unmodifiableList(notes); }
+    public int getBarCount() { return barCount; }
+
+    int totalSyllables() {
+        return lines.stream().mapToInt(LyricLine::getSyllables).sum();
+    }
+
+    double averageMidi() {
+        if (notes.isEmpty()) return 60;
+        return notes.stream().mapToInt(MelodyNote::getMidi).average().orElse(60);
+    }
+}
+
+final class SongSketch {
+    private final List<VerseBlock> blocks = new ArrayList<>();
+    private int bpm = 120;
+    private PitchClass tonic = PitchClass.A;
+    private ScalePalette scale = ScalePalette.IONIAN;
+    private LyricMood mood = LyricMood.NOCTURNAL;
+
+    void addBlock(VerseBlock block) { blocks.add(block); }
+    public List<VerseBlock> getBlocks() { return Collections.unmodifiableList(blocks); }
+    public int getBpm() { return bpm; }
+    public void setBpm(int bpm) { this.bpm = bpm; }
+    public PitchClass getTonic() { return tonic; }
+    public void setTonic(PitchClass tonic) { this.tonic = tonic; }
+    public ScalePalette getScale() { return scale; }
+    public void setScale(ScalePalette scale) { this.scale = scale; }
+    public LyricMood getMood() { return mood; }
+    public void setMood(LyricMood mood) { this.mood = mood; }
+
+    int hookDensity() {
+        long chorusLines = blocks.stream()
+                .filter(b -> b.getSection() == SongSection.CHORUS)
+                .mapToInt(b -> b.getLines().size())
+                .sum();
+        return (int) chorusLines;
+    }
+}
+
+final class LyricSeedBank {
+    private final SecureRandom rng;
+    private final String[] openers;
+    private final String[] bridges;
+    private final String[] closers;
+
+    LyricSeedBank(SecureRandom rng) {
+        this.rng = rng;
+        this.openers = new String[] {
+                "Moonlight writes the", "Again we trace the", "Silicon hearts in",
+                "Tape hiss carries", "Neon verbs on", "Pulse metronome in",
+                "Ghost choir hums a", "Satellite delay on", "Soft limiter kisses"
+        };
