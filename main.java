@@ -1003,3 +1003,70 @@ final class FamChainAdapter {
 
 // ======================== Analytics ========================
 
+final class FamSessionAnalytics {
+    private final Map<String, Integer> verdictCounts = new HashMap<>();
+    private final Map<HookBetKind, Integer> hookHits = new EnumMap<>(HookBetKind.class);
+    private BigDecimal totalVolume = BigDecimal.ZERO;
+    private long tracks;
+
+    void ingest(FamTrackResult result, BigDecimal stake) {
+        tracks++;
+        totalVolume = totalVolume.add(stake);
+        verdictCounts.merge(result.getVerdict().name(), 1, Integer::sum);
+    }
+
+    void ingestHook(HookBetKind kind) {
+        hookHits.merge(kind, 1, Integer::sum);
+    }
+
+    public long getTracks() { return tracks; }
+    public BigDecimal getTotalVolume() { return totalVolume; }
+
+    public Map<String, Integer> getVerdictCounts() {
+        return Collections.unmodifiableMap(verdictCounts);
+    }
+
+    public double hitRate(HarmonyVerdict v) {
+        if (tracks == 0) return 0;
+        return verdictCounts.getOrDefault(v.name(), 0) / (double) tracks;
+    }
+}
+
+
+// ======================== Progression reference ========================
+final class FamProgressionMatrix {
+    private FamProgressionMatrix() {}
+
+    private static final Map<String, String> MAJOR = new HashMap<>();
+    private static final Map<String, String> MINOR = new HashMap<>();
+    private static final Map<String, String> MODAL = new HashMap<>();
+
+    static {
+        MAJOR.put("Cm1", "I");
+        MAJOR.put("Cm2", "I");
+        MAJOR.put("Cm3", "I");
+        MAJOR.put("Cm4", "IV");
+        MAJOR.put("Cm5", "V");
+        MAJOR.put("Cm6", "V");
+        MAJOR.put("Cm7", "V");
+        MAJOR.put("Dm1", "I");
+        MAJOR.put("Dm2", "I");
+        MAJOR.put("Dm3", "I");
+        MAJOR.put("Dm4", "IV");
+        MAJOR.put("Dm5", "V");
+        MAJOR.put("Dm6", "V");
+        MAJOR.put("Dm7", "V");
+        MAJOR.put("Em1", "I");
+        MAJOR.put("Em2", "I");
+        MAJOR.put("Em3", "I");
+        MAJOR.put("Em4", "IV");
+        MAJOR.put("Em5", "V");
+        MAJOR.put("Em6", "V");
+        MAJOR.put("Em7", "V");
+        MAJOR.put("Fm1", "I");
+        MAJOR.put("Fm2", "I");
+        MAJOR.put("Fm3", "I");
+        MAJOR.put("Fm4", "IV");
+        MAJOR.put("Fm5", "V");
+        MAJOR.put("Fm6", "V");
+        MAJOR.put("Fm7", "V");
