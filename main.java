@@ -668,3 +668,70 @@ final class FamRoyaltyLedger {
         if (audit.size() > MoonStudioConfig.HISTORY_CAP) audit.remove(0);
     }
 
+    public BigDecimal getStudioBalance() { return studioBalance; }
+    public BigDecimal getPublisherAccrued() { return publisherAccrued; }
+    public List<String> getAuditTail(int n) {
+        int from = Math.max(0, audit.size() - n);
+        return new ArrayList<>(audit.subList(from, audit.size()));
+    }
+}
+
+// ======================== Hook resolver ========================
+
+final class FamHookResolver {
+    boolean resolveDoubleHook(SongSketch sketch) {
+        return sketch.hookDensity() >= 3;
+    }
+
+    boolean resolveBridgeLift(SongSketch sketch) {
+        return sketch.getBlocks().stream()
+                .anyMatch(b -> b.getSection() == SongSection.BRIDGE && b.totalSyllables() > 24);
+    }
+
+    boolean resolveMoonDrop(SongSketch sketch, HarmonyVerdict verdict) {
+        return verdict == HarmonyVerdict.HOOK && sketch.getBpm() >= 128;
+    }
+}
+
+// ======================== Fairness digest ========================
+
+final class FamCommitReveal {
+    private final byte[] seed;
+    private final String commitHash;
+
+    FamCommitReveal(SecureRandom rng) {
+        seed = new byte[32];
+        rng.nextBytes(seed);
+        commitHash = sha256Hex(seed);
+    }
+
+    public String getCommitHash() { return commitHash; }
+    public byte[] getSeed() { return Arrays.copyOf(seed, seed.length); }
+
+    static String sha256Hex(byte[] data) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] dig = md.digest(data);
+            StringBuilder sb = new StringBuilder("0x");
+            for (byte b : dig) sb.append(String.format("%02x", b));
+            return sb.toString();
+        } catch (Exception e) {
+            throw new FamComposeException("FAM_HASH", e.getMessage());
+        }
+    }
+
+    String mixTrack(long trackId, String writerId) {
+        String payload = MoonStudioConfig.DOMAIN_SEPARATOR + "|" + trackId + "|" + writerId + "|" + commitHash;
+        return sha256Hex(payload.getBytes(StandardCharsets.UTF_8));
+    }
+}
+
+// ======================== Composition engine ========================
+
+final class FamSongAtelier {
+    private final SecureRandom rng;
+    private final FamStudioEventBus bus;
+    private final FamRoyaltyLedger royalty;
+    private final FamHookResolver hookResolver;
+    private final LyricSeedBank lyricBank;
+    private final MelodyWeaver melodyWeaver;
