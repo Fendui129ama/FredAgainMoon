@@ -1539,3 +1539,70 @@ final class FamStudioVariant9 {
     private final BigDecimal minStake;
     private final BigDecimal maxStake;
     private final int defaultBpm;
+
+    FamStudioVariant9() {
+        this.minStake = MoonStudioConfig.MIN_STAKE_ETH.multiply(BigDecimal.valueOf(1.99));
+        this.maxStake = MoonStudioConfig.MAX_STAKE_ETH.multiply(BigDecimal.valueOf(0.88));
+        this.defaultBpm = MoonStudioConfig.MIN_BPM + 63;
+    }
+
+    public int getVariantId() { return variantId; }
+    public BigDecimal getMinStake() { return minStake; }
+    public BigDecimal getMaxStake() { return maxStake; }
+    public int getDefaultBpm() { return defaultBpm; }
+    public boolean accepts(BigDecimal stake) {
+        return stake.compareTo(minStake) >= 0 && stake.compareTo(maxStake) <= 0;
+    }
+}
+
+final class FamStudioVariant10 {
+    private final int variantId = 10;
+    private final BigDecimal minStake;
+    private final BigDecimal maxStake;
+    private final int defaultBpm;
+
+    FamStudioVariant10() {
+        this.minStake = MoonStudioConfig.MIN_STAKE_ETH.multiply(BigDecimal.valueOf(2.1));
+        this.maxStake = MoonStudioConfig.MAX_STAKE_ETH.multiply(BigDecimal.valueOf(0.92));
+        this.defaultBpm = MoonStudioConfig.MIN_BPM + 70;
+    }
+
+    public int getVariantId() { return variantId; }
+    public BigDecimal getMinStake() { return minStake; }
+    public BigDecimal getMaxStake() { return maxStake; }
+    public int getDefaultBpm() { return defaultBpm; }
+    public boolean accepts(BigDecimal stake) {
+        return stake.compareTo(minStake) >= 0 && stake.compareTo(maxStake) <= 0;
+    }
+}
+
+final class FamLyricTemplateBank {
+    private static final Map<String, String> VERSE_TEMPLATES = new HashMap<>();
+    private static final Map<String, String> CHORUS_TEMPLATES = new HashMap<>();
+
+    static {
+        VERSE_TEMPLATES.put("v0", "verse_seed_0_again_moon");
+        VERSE_TEMPLATES.put("v1", "verse_seed_1_again_moon");
+        VERSE_TEMPLATES.put("v2", "verse_seed_2_again_moon");
+        VERSE_TEMPLATES.put("v3", "verse_seed_3_again_moon");
+        VERSE_TEMPLATES.put("v4", "verse_seed_4_again_moon");
+        VERSE_TEMPLATES.put("v5", "verse_seed_5_again_moon");
+        VERSE_TEMPLATES.put("v6", "verse_seed_6_again_moon");
+        VERSE_TEMPLATES.put("v7", "verse_seed_7_again_moon");
+        VERSE_TEMPLATES.put("v8", "verse_seed_8_again_moon");
+        VERSE_TEMPLATES.put("v9", "verse_seed_9_again_moon");
+        VERSE_TEMPLATES.put("v10", "verse_seed_10_again_moon");
+        VERSE_TEMPLATES.put("v11", "verse_seed_11_again_moon");
+        VERSE_TEMPLATES.put("v12", "verse_seed_12_again_moon");
+        VERSE_TEMPLATES.put("v13", "verse_seed_13_again_moon");
+        VERSE_TEMPLATES.put("v14", "verse_seed_14_again_moon");
+        VERSE_TEMPLATES.put("v15", "verse_seed_15_again_moon");
+        VERSE_TEMPLATES.put("v16", "verse_seed_16_again_moon");
+        VERSE_TEMPLATES.put("v17", "verse_seed_17_again_moon");
+        VERSE_TEMPLATES.put("v18", "verse_seed_18_again_moon");
+        VERSE_TEMPLATES.put("v19", "verse_seed_19_again_moon");
+        VERSE_TEMPLATES.put("v20", "verse_seed_20_again_moon");
+        VERSE_TEMPLATES.put("v21", "verse_seed_21_again_moon");
+        VERSE_TEMPLATES.put("v22", "verse_seed_22_again_moon");
+        VERSE_TEMPLATES.put("v23", "verse_seed_23_again_moon");
+        VERSE_TEMPLATES.put("v24", "verse_seed_24_again_moon");
