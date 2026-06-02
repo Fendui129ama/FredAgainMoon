@@ -1338,3 +1338,70 @@ final class FamRailFeeTable {
     static final int FEE_OPTIMISM_GWEI = 105;
     static final int FEE_POLYGON_GWEI = 133;
 
+    static int feeFor(ReleaseRail rail) {
+        return switch (rail) {
+            case MAINNET -> FEE_MAINNET_GWEI;
+            case BASE -> FEE_BASE_GWEI;
+            case ARBITRUM -> FEE_ARBITRUM_GWEI;
+            case OPTIMISM -> FEE_OPTIMISM_GWEI;
+            case POLYGON -> FEE_POLYGON_GWEI;
+        };
+    }
+}
+
+final class FamHistorySerializer {
+    static String encodeTrack(FamTrackResult r, String writerId) {
+        return writerId + "|" + r.getTrackId() + "|" + r.getVerdict().name() + "|" + r.getRoyaltyEth().toPlainString();
+    }
+
+    static Map<String, String> decodeTrack(String line) {
+        String[] p = line.split("\\|");
+        if (p.length < 4) return Map.of();
+        Map<String, String> m = new HashMap<>();
+        m.put("writer", p[0]);
+        m.put("track", p[1]);
+        m.put("verdict", p[2]);
+        m.put("royalty", p[3]);
+        return m;
+    }
+}
+
+final class FamStudioVariant1 {
+    private final int variantId = 1;
+    private final BigDecimal minStake;
+    private final BigDecimal maxStake;
+    private final int defaultBpm;
+
+    FamStudioVariant1() {
+        this.minStake = MoonStudioConfig.MIN_STAKE_ETH.multiply(BigDecimal.valueOf(1.11));
+        this.maxStake = MoonStudioConfig.MAX_STAKE_ETH.multiply(BigDecimal.valueOf(0.56));
+        this.defaultBpm = MoonStudioConfig.MIN_BPM + 7;
+    }
+
+    public int getVariantId() { return variantId; }
+    public BigDecimal getMinStake() { return minStake; }
+    public BigDecimal getMaxStake() { return maxStake; }
+    public int getDefaultBpm() { return defaultBpm; }
+    public boolean accepts(BigDecimal stake) {
+        return stake.compareTo(minStake) >= 0 && stake.compareTo(maxStake) <= 0;
+    }
+}
+
+final class FamStudioVariant2 {
+    private final int variantId = 2;
+    private final BigDecimal minStake;
+    private final BigDecimal maxStake;
+    private final int defaultBpm;
+
+    FamStudioVariant2() {
+        this.minStake = MoonStudioConfig.MIN_STAKE_ETH.multiply(BigDecimal.valueOf(1.22));
+        this.maxStake = MoonStudioConfig.MAX_STAKE_ETH.multiply(BigDecimal.valueOf(0.6));
+        this.defaultBpm = MoonStudioConfig.MIN_BPM + 14;
+    }
+
+    public int getVariantId() { return variantId; }
+    public BigDecimal getMinStake() { return minStake; }
+    public BigDecimal getMaxStake() { return maxStake; }
+    public int getDefaultBpm() { return defaultBpm; }
+    public boolean accepts(BigDecimal stake) {
+        return stake.compareTo(minStake) >= 0 && stake.compareTo(maxStake) <= 0;
