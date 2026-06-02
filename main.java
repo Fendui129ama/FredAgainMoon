@@ -534,3 +534,70 @@ final class WriterSeatProfile {
         this.writerId = writerId;
         this.walletHex = walletHex;
     }
+
+    public String getWriterId() { return writerId; }
+    public String getWalletHex() { return walletHex; }
+    public int getXp() { return xp; }
+    public void addXp(int delta) { xp = Math.max(0, xp + delta); }
+    public int getHookStreak() { return hookStreak; }
+    public int getFlatStreak() { return flatStreak; }
+
+    void recordOutcome(HarmonyVerdict v, BigDecimal delta) {
+        if (delta.signum() > 0) {
+            hookStreak++;
+            flatStreak = 0;
+            lifetimeEarned = lifetimeEarned.add(delta);
+        } else if (delta.signum() < 0) {
+            flatStreak++;
+            hookStreak = 0;
+            lifetimeSpent = lifetimeSpent.add(delta.abs());
+        }
+        if (v == HarmonyVerdict.HOOK) addXp(44);
+        else if (v == HarmonyVerdict.RESOLVED) addXp(20);
+        else if (v == HarmonyVerdict.TENSION) addXp(6);
+        else addXp(2);
+    }
+
+    void pushHistory(String snippet) {
+        recentTracks.addFirst(snippet);
+        while (recentTracks.size() > 36) recentTracks.removeLast();
+    }
+
+    public List<String> getRecentTracks() { return new ArrayList<>(recentTracks); }
+    public WriterArchetype getArchetype() { return WriterArchetype.forXp(xp); }
+    public BigDecimal netEth() { return lifetimeEarned.subtract(lifetimeSpent); }
+}
+
+final class FamLeaderboardEntry implements Comparable<FamLeaderboardEntry> {
+    final String writerId;
+    final BigDecimal netEth;
+    final int xp;
+    final long updatedEpoch;
+
+    FamLeaderboardEntry(String writerId, BigDecimal netEth, int xp, long updatedEpoch) {
+        this.writerId = writerId;
+        this.netEth = netEth;
+        this.xp = xp;
+        this.updatedEpoch = updatedEpoch;
+    }
+
+    @Override
+    public int compareTo(FamLeaderboardEntry o) {
+        int c = o.netEth.compareTo(netEth);
+        if (c != 0) return c;
+        return Integer.compare(o.xp, xp);
+    }
+}
+
+final class FamLeaderboard {
+    private final PriorityQueue<FamLeaderboardEntry> heap =
+            new PriorityQueue<>(Comparator.reverseOrder());
+
+    synchronized void upsert(WriterSeatProfile profile) {
+        FamLeaderboardEntry e = new FamLeaderboardEntry(
+                profile.getWriterId(),
+                profile.netEth(),
+                profile.getXp(),
+                Instant.now().getEpochSecond());
+        heap.offer(e);
+        while (heap.size() > MoonStudioConfig.LEADERBOARD_CAP) heap.poll();
