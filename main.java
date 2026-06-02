@@ -936,3 +936,70 @@ final class FamShowcaseMatch {
     int scoreA;
     int scoreB;
 
+    FamShowcaseMatch(String writerA, String writerB) {
+        this.writerA = writerA;
+        this.writerB = writerB;
+    }
+
+    String leader() {
+        if (scoreA > scoreB) return writerA;
+        if (scoreB > scoreA) return writerB;
+        return null;
+    }
+}
+
+final class FamShowcase {
+    private final List<FamShowcaseMatch> matches = new ArrayList<>();
+    private final String venueAddr;
+
+    FamShowcase(String venueAddr) {
+        this.venueAddr = venueAddr;
+    }
+
+    void seedWriters(List<String> ids) {
+        matches.clear();
+        List<String> shuffled = new ArrayList<>(ids);
+        Collections.shuffle(shuffled, ThreadLocalRandom.current());
+        for (int i = 0; i + 1 < shuffled.size(); i += 2) {
+            matches.add(new FamShowcaseMatch(shuffled.get(i), shuffled.get(i + 1)));
+        }
+    }
+
+    void recordWin(String writerId) {
+        for (FamShowcaseMatch m : matches) {
+            if (m.writerA.equals(writerId)) m.scoreA++;
+            else if (m.writerB.equals(writerId)) m.scoreB++;
+        }
+    }
+
+    List<FamShowcaseMatch> getMatches() { return Collections.unmodifiableList(matches); }
+    public String getVenueAddr() { return venueAddr; }
+}
+
+// ======================== Chain adapter ========================
+
+final class FamChainAdapter {
+    private final ReleaseRail rail;
+    private final String oracleAddr;
+    private int virtualBlock;
+
+    FamChainAdapter(ReleaseRail rail, String oracleAddr) {
+        this.rail = rail;
+        this.oracleAddr = oracleAddr;
+        this.virtualBlock = 19_400_000 + rail.getChainId();
+    }
+
+    int confirmStake() {
+        virtualBlock += rail.getConfirmBlocks();
+        return virtualBlock;
+    }
+
+    String encodeReceipt(long trackId, HarmonyVerdict verdict) {
+        return "fam:" + rail.getChainId() + ":" + trackId + ":" + verdict.getCode() + ":" + oracleAddr.substring(2, 10);
+    }
+
+    public ReleaseRail getRail() { return rail; }
+}
+
+// ======================== Analytics ========================
+
