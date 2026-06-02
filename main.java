@@ -1271,3 +1271,70 @@ final class FamMotifCatalog {
         return t;
     }
 }
+
+final class FamMonteCarloRunner {
+    private final FredAgainMoon studio;
+    private final int iterations;
+
+    FamMonteCarloRunner(FredAgainMoon studio, int iterations) {
+        this.studio = studio;
+        this.iterations = iterations;
+    }
+
+    FamSessionAnalytics run(List<String> writers, BigDecimal stake) {
+        for (int i = 0; i < iterations; i++) {
+            String wid = writers.get(i % writers.size());
+            HookBetKind hook = HookBetKind.values()[i % HookBetKind.values().length];
+            studio.compose(wid, stake, List.of(hook));
+        }
+        return studio.analytics();
+    }
+}
+
+final class FamHookPremiumLane {
+    private final BigDecimal premiumRate;
+
+    FamHookPremiumLane() {
+        this.premiumRate = BigDecimal.valueOf(MoonStudioConfig.HOOK_BONUS_BPS)
+                .divide(BigDecimal.valueOf(MoonStudioConfig.BPS_DENOM), 6, RoundingMode.HALF_UP);
+    }
+
+    BigDecimal premium(BigDecimal baseStake) {
+        return baseStake.multiply(premiumRate);
+    }
+
+    boolean sketchHasHook(SongSketch sketch) {
+        return sketch.hookDensity() >= 2;
+    }
+
+    BigDecimal resolve(BigDecimal premium, boolean landed) {
+        if (!landed) return BigDecimal.ZERO;
+        return premium.multiply(BigDecimal.valueOf(2.8));
+    }
+}
+
+final class FamStemSplitController {
+    private final List<StemLane> activeLanes = new ArrayList<>();
+
+    List<StemLane> openSplit(SongSketch sketch) {
+        if (sketch.getBlocks().isEmpty()) throw new FamComposeException("FAM_STEM", "Empty sketch");
+        if (activeLanes.size() >= StemLane.values().length) {
+            throw new FamComposeException("FAM_STEM_CAP", "Max stem lanes reached");
+        }
+        for (StemLane lane : StemLane.values()) {
+            if (!activeLanes.contains(lane)) activeLanes.add(lane);
+        }
+        return List.copyOf(activeLanes);
+    }
+
+    void clear() { activeLanes.clear(); }
+    int activeCount() { return activeLanes.size(); }
+}
+
+final class FamRailFeeTable {
+    static final int FEE_MAINNET_GWEI = 152;
+    static final int FEE_BASE_GWEI = 100;
+    static final int FEE_ARBITRUM_GWEI = 106;
+    static final int FEE_OPTIMISM_GWEI = 105;
+    static final int FEE_POLYGON_GWEI = 133;
+
