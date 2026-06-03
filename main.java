@@ -1874,3 +1874,67 @@ public final class FredAgainMoon {
             @Override public void onPhaseShift(StudioPhase phase) {}
         };
     }
+
+    public FamTrackResult compose(String writerId, BigDecimal stakeEth) {
+        return compose(writerId, stakeEth, List.of());
+    }
+
+    public FamTrackResult compose(String writerId, BigDecimal stakeEth, List<HookBetKind> hooks) {
+        atelier.registerWriter(writerId, syntheticWallet(writerId));
+        FamTrackResult result = atelier.composeTrack(writerId, stakeEth, hooks);
+        chain.confirmStake();
+        analytics.ingest(result, stakeEth);
+        return result;
+    }
+
+    public void registerWriter(String writerId, String walletHex) {
+        atelier.registerWriter(writerId, walletHex);
+    }
+
+    public List<FamLeaderboardEntry> topWriters(int n) {
+        return atelier.getLeaderboard().top(n);
+    }
+
+    public FamRoyaltyLedger royalty() { return atelier.getRoyalty(); }
+    public FamSessionAnalytics analytics() { return analytics; }
+    public FamShowcase showcase() { return showcase; }
+
+    private static String syntheticWallet(String writerId) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] dig = md.digest((MoonStudioConfig.CHAIN_SALT + writerId).getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder("0x");
+            for (int i = 0; i < 20; i++) sb.append(String.format("%02x", dig[i]));
+            return sb.toString();
+        } catch (Exception e) {
+            throw new FamComposeException("FAM_WALLET", e.getMessage());
+        }
+    }
+
+    public static void main(String[] args) {
+        FredAgainMoon studio = new FredAgainMoon();
+        System.out.println("=== FredAgainMoon — AI songwriter lunar atelier ===");
+        System.out.println("Rail: " + ReleaseRail.MAINNET.getLabel());
+        System.out.println("Studio: " + MoonStudioConfig.ADDRESS_STUDIO);
+        List<String> roster = List.of("LunarScribe", "HookTide", "VerseNova", "BridgeMist", "AgainPulse");
+        studio.showcase().seedWriters(roster);
+        BigDecimal base = new BigDecimal("0.04");
+        for (int i = 0; i < 14; i++) {
+            String wid = roster.get(i % roster.size());
+            List<HookBetKind> hooks = i % 3 == 0
+                    ? List.of(HookBetKind.DOUBLE_HOOK, HookBetKind.MOON_DROP)
+                    : List.of(HookBetKind.BRIDGE_LIFT);
+            FamTrackResult r = studio.compose(wid, base.add(BigDecimal.valueOf(i * 0.0018)), hooks);
+            System.out.printf("track %d writer %s -> %s royalty %s bpm %d key %s%n",
+                    r.getTrackId(), wid, r.getVerdict(), r.getRoyaltyEth().toPlainString(),
+                    r.getBpm(), r.getTonic().getLabel());
+        }
+        System.out.println("--- Leaderboard ---");
+        for (FamLeaderboardEntry e : studio.topWriters(5)) {
+            System.out.printf("%s net=%s xp=%d%n", e.writerId, e.netEth.toPlainString(), e.xp);
+        }
+        System.out.println("Studio balance: " + studio.royalty().getStudioBalance().toPlainString());
+        System.out.println("Audit tail:");
+        for (String line : studio.royalty().getAuditTail(6)) System.out.println("  " + line);
+    }
+}
