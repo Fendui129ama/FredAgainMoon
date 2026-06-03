@@ -1807,3 +1807,70 @@ final class FamDegreeTableAEOLIAN {
     static final int DEG_10 = 0;
     static final int DEG_11 = 7;
     static int size() { return 12; }
+}
+
+final class FamDegreeTableLYDIAN {
+    private FamDegreeTableLYDIAN() {}
+    static final int DEG_0 = 0;
+    static final int DEG_1 = 7;
+    static final int DEG_2 = 2;
+    static final int DEG_3 = 9;
+    static final int DEG_4 = 4;
+    static final int DEG_5 = 11;
+    static final int DEG_6 = 6;
+    static final int DEG_7 = 1;
+    static final int DEG_8 = 8;
+    static final int DEG_9 = 3;
+    static final int DEG_10 = 10;
+    static final int DEG_11 = 5;
+    static int size() { return 12; }
+}
+
+final class FamDegreeTablePHRYGIAN {
+    private FamDegreeTablePHRYGIAN() {}
+    static final int DEG_0 = 9;
+    static final int DEG_1 = 4;
+    static final int DEG_2 = 11;
+    static final int DEG_3 = 6;
+    static final int DEG_4 = 1;
+    static final int DEG_5 = 8;
+    static final int DEG_6 = 3;
+    static final int DEG_7 = 10;
+    static final int DEG_8 = 5;
+    static final int DEG_9 = 0;
+    static final int DEG_10 = 7;
+    static final int DEG_11 = 2;
+    static int size() { return 12; }
+}
+// ======================== Public facade ========================
+
+public final class FredAgainMoon {
+    private final FamSongAtelier atelier;
+    private final FamChainAdapter chain;
+    private final FamShowcase showcase;
+    private final FamSessionAnalytics analytics = new FamSessionAnalytics();
+    private final SecureRandom rng = new SecureRandom();
+
+    public FredAgainMoon() {
+        this(MoonStudioConfig.ADDRESS_STUDIO, MoonStudioConfig.ADDRESS_ORACLE, ReleaseRail.MAINNET);
+    }
+
+    public FredAgainMoon(String studioAddr, String oracleAddr, ReleaseRail rail) {
+        FamSongAtelier.validateAddr(studioAddr);
+        FamSongAtelier.validateAddr(oracleAddr);
+        this.atelier = new FamSongAtelier(studioAddr, oracleAddr, rail, rng);
+        this.chain = new FamChainAdapter(rail, oracleAddr);
+        this.showcase = new FamShowcase(MoonStudioConfig.ADDRESS_COLLAB_DESK);
+        atelier.getBus().subscribe(loggingListener());
+    }
+
+    private FamStudioListener loggingListener() {
+        return new FamStudioListener() {
+            @Override public void onTrackOpened(long trackId, String writerId) {}
+            @Override public void onLyricLine(long trackId, SongSection section, String line) {}
+            @Override public void onMelodyNote(long trackId, int midi, PitchClass pitch) {}
+            @Override public void onVerdict(long trackId, HarmonyVerdict verdict, BigDecimal deltaEth) {}
+            @Override public void onRoyaltyMove(String lane, BigDecimal amountEth, String targetAddr) {}
+            @Override public void onPhaseShift(StudioPhase phase) {}
+        };
+    }
