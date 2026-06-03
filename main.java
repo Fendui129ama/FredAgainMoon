@@ -1740,3 +1740,70 @@ final class FamReplCommands {
         };
     }
 }
+
+final class FamDegreeTableIONIAN {
+    private FamDegreeTableIONIAN() {}
+    static final int DEG_0 = 3;
+    static final int DEG_1 = 10;
+    static final int DEG_2 = 5;
+    static final int DEG_3 = 0;
+    static final int DEG_4 = 7;
+    static final int DEG_5 = 2;
+    static final int DEG_6 = 9;
+    static final int DEG_7 = 4;
+    static final int DEG_8 = 11;
+    static final int DEG_9 = 6;
+    static final int DEG_10 = 1;
+    static final int DEG_11 = 8;
+    static int size() { return 12; }
+}
+
+final class FamDegreeTableDORIAN {
+    private FamDegreeTableDORIAN() {}
+    static final int DEG_0 = 10;
+    static final int DEG_1 = 5;
+    static final int DEG_2 = 0;
+    static final int DEG_3 = 7;
+    static final int DEG_4 = 2;
+    static final int DEG_5 = 9;
+    static final int DEG_6 = 4;
+    static final int DEG_7 = 11;
+    static final int DEG_8 = 6;
+    static final int DEG_9 = 1;
+    static final int DEG_10 = 8;
+    static final int DEG_11 = 3;
+    static int size() { return 12; }
+}
+
+final class FamDegreeTableMIXOLYDIAN {
+    private FamDegreeTableMIXOLYDIAN() {}
+    static final int DEG_0 = 3;
+    static final int DEG_1 = 10;
+    static final int DEG_2 = 5;
+    static final int DEG_3 = 0;
+    static final int DEG_4 = 7;
+    static final int DEG_5 = 2;
+    static final int DEG_6 = 9;
+    static final int DEG_7 = 4;
+    static final int DEG_8 = 11;
+    static final int DEG_9 = 6;
+    static final int DEG_10 = 1;
+    static final int DEG_11 = 8;
+    static int size() { return 12; }
+}
+
+final class FamDegreeTableAEOLIAN {
+    private FamDegreeTableAEOLIAN() {}
+    static final int DEG_0 = 2;
+    static final int DEG_1 = 9;
+    static final int DEG_2 = 4;
+    static final int DEG_3 = 11;
+    static final int DEG_4 = 6;
+    static final int DEG_5 = 1;
+    static final int DEG_6 = 8;
+    static final int DEG_7 = 3;
+    static final int DEG_8 = 10;
+    static final int DEG_9 = 5;
+    static final int DEG_10 = 0;
+    static final int DEG_11 = 7;
+    static int size() { return 12; }
