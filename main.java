@@ -1673,3 +1673,70 @@ final class FamLyricTemplateBank {
         CHORUS_TEMPLATES.put("c29", "CHORUS_HOOK_29_LUNAR");
         CHORUS_TEMPLATES.put("c30", "CHORUS_HOOK_30_LUNAR");
         CHORUS_TEMPLATES.put("c31", "CHORUS_HOOK_31_LUNAR");
+        CHORUS_TEMPLATES.put("c32", "CHORUS_HOOK_32_LUNAR");
+        CHORUS_TEMPLATES.put("c33", "CHORUS_HOOK_33_LUNAR");
+        CHORUS_TEMPLATES.put("c34", "CHORUS_HOOK_34_LUNAR");
+        CHORUS_TEMPLATES.put("c35", "CHORUS_HOOK_35_LUNAR");
+        CHORUS_TEMPLATES.put("c36", "CHORUS_HOOK_36_LUNAR");
+        CHORUS_TEMPLATES.put("c37", "CHORUS_HOOK_37_LUNAR");
+        CHORUS_TEMPLATES.put("c38", "CHORUS_HOOK_38_LUNAR");
+        CHORUS_TEMPLATES.put("c39", "CHORUS_HOOK_39_LUNAR");
+    }
+
+    static String verse(int idx) {
+        return VERSE_TEMPLATES.getOrDefault("v" + idx, "default_verse");
+    }
+
+    static String chorus(int idx) {
+        return CHORUS_TEMPLATES.getOrDefault("c" + idx, "DEFAULT_CHORUS");
+    }
+}
+
+final class FamBpmLadder {
+    private static final int[] RUNG = {72, 75, 78, 81, 84, 87, 90, 93, 96, 99, 102, 105, 108, 111, 114, 117, 120, 123, 126, 129, 132, 135, 138, 141, 144, 147, 150, 153, 156, 159, 162, 165, 168, 171, 174, 177};
+
+    static int nearest(int target) {
+        int best = RUNG[0];
+        int diff = Integer.MAX_VALUE;
+        for (int b : RUNG) {
+            int d = Math.abs(target - b);
+            if (d < diff) { diff = d; best = b; }
+        }
+        return best;
+    }
+}
+
+final class FamReplCommands {
+    static final String CMD_COMPOSE = "compose";
+    static final String CMD_REGISTER = "register";
+    static final String CMD_TOP = "top";
+    static final String CMD_AUDIT = "audit";
+    static final String CMD_HALT = "halt";
+    static final String CMD_RESUME = "resume";
+    static final String CMD_SHOWCASE = "showcase";
+    static final String CMD_MOTIFS = "motifs";
+
+    static boolean dispatch(String raw, FredAgainMoon studio) {
+        if (raw == null || raw.isBlank()) return false;
+        String[] parts = raw.trim().split("\\s+");
+        String op = parts[0].toLowerCase(Locale.ROOT);
+        return switch (op) {
+            case "compose" -> {
+                if (parts.length < 3) yield false;
+                BigDecimal w = new BigDecimal(parts[2]);
+                FamTrackResult r = studio.compose(parts[1], w);
+                System.out.println(r.getVerdict() + " " + r.getRoyaltyEth());
+                yield true;
+            }
+            case "top" -> {
+                studio.topWriters(10).forEach(e -> System.out.println(e.writerId + " " + e.netEth));
+                yield true;
+            }
+            case "audit" -> {
+                studio.royalty().getAuditTail(12).forEach(System.out::println);
+                yield true;
+            }
+            default -> false;
+        };
+    }
+}
